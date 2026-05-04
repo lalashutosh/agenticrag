@@ -1,0 +1,7 @@
+ragdb_500/
+venv/
+faiss_ragdb_500/
+__pycache__/
+.env
+
+
