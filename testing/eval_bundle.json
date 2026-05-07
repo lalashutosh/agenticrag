@@ -1,0 +1,22 @@
+{
+  "instructions": "\nYou are an expert evaluator in quantum machine learning and physics.\n\nEvaluate each answer based on:\n\n1. Technical correctness\n2. Conceptual completeness\n3. Grounding (no hallucinations)\n4. Proper use of terminology\n\nScoring:\n5 = fully correct, precise, complete\n4 = mostly correct, minor gaps\n3 = partially correct, missing key ideas\n2 = mostly incorrect\n1 = incorrect or hallucinated\n\nReturn STRICT JSON for each item:\n{\n  \"score\": 1-5,\n  \"verdict\": \"correct\" | \"partially_correct\" | \"incorrect\",\n  \"reason\": \"brief explanation\"\n}\n\nBe strict. Penalize vague or generic answers.\n",
+  "schema": {
+    "score": "1-5",
+    "verdict": "correct | partially_correct | incorrect",
+    "reason": "string"
+  },
+  "examples": [
+    {
+      "question": "What is a quantum kernel method?",
+      "answer": "A quantum kernel method is a quantum\u2011enhanced version of classical kernel\u2011based machine learning (e.g., support vector machines). Classical data points \\(x\\) are first encoded into quantum states \\(|\\phi(x)\\rangle\\) by a parameterized quantum circuit (the feature map). The quantum kernel is then defined as the overlap (fidelity) of these encoded states, typically  \n\n\\[\nK(x,x') = \\bigl|\\langle\\phi(x)\\,|\\,\\phi(x')\\rangle\\bigr|^{2},\n\\]\n\nwhich can be estimated on a quantum device. This kernel matrix is subsequently used in standard kernel algorithms (such as SVM) to find a separating hyperplane in the (implicitly) high\u2011dimensional feature space induced by the quantum map. The approach leverages the expressive power of quantum states while remaining compatible with near\u2011term, noisy intermediate\u2011scale quantum (NISQ) hardware."
+    },
+    {
+      "question": "What is the role of Hilbert space in quantum machine learning?",
+      "answer": "In quantum machine learning, the Hilbert space \\(\\mathcal{H}\\) serves as the **feature space** into which classical data are encoded via quantum states (e.g., \\(|\\phi(x)\\rangle\\)). The inner product \\(\\langle\\phi(x)|\\phi(x')\\rangle\\) in this Hilbert space defines the quantum kernel that the algorithm evaluates. By exploiting the ability to prepare and manipulate states in an exponentially large Hilbert space, QML methods can access feature spaces that are classically intractable, thereby enabling potential quantum advantages in tasks such as classification and regression."
+    },
+    {
+      "question": "How do variational quantum circuits work?",
+      "answer": "Variational quantum circuits (VQCs) are parameterized quantum circuits whose internal gates (e.g., rotations, entangling layers) depend on a set of classical parameters \\(\\boldsymbol{\\theta}\\). The circuit prepares a state  \n\n\\[\n|\\psi(\\boldsymbol{\\theta})\\rangle = U(\\boldsymbol{\\theta})|0\\rangle^{\\otimes n},\n\\qquad \nU(\\boldsymbol{\\theta}) = \\prod_{l=1}^{L} U_l(\\boldsymbol{\\theta}_l),\n\\]\n\nwhere each \\(U_l\\) is a layer of parametrized gates.  \n\nA classical optimizer then adjusts \\(\\boldsymbol{\\theta}\\) to minimize (or maximize) a cost function \\(C(\\boldsymbol{\\theta})\\) that is estimated by measuring the quantum device (e.g., expectation values of observables, rewards in reinforcement\u2011learning settings, or kernel\u2011based losses). The optimization loop proceeds as follows:\n\n1. **Initialize** \\(\\boldsymbol{\\theta}\\) (often randomly or via a heuristic).  \n2. **Execute** the VQC on quantum hardware (or a simulator) to obtain measurement outcomes.  \n3. **Estimate** the cost \\(C(\\boldsymbol{\\theta})\\) from those outcomes.  \n4. **Update** \\(\\boldsymbol{\\theta}\\) using a classical optimization method (gradient\u2011based, parameter\u2011shift, SPSA, COBYLA, etc.).  \n5. **Iterate** steps\u202f2\u20114 until convergence.\n\nBecause the circuit depth \\(L\\) can be kept shallow, VQCs are amenable to execution on noisy intermediate\u2011scale quantum (NISQ) devices, avoiding the exponential overhead of brute\u2011force searches over state\u2011action spaces. This parameter\u2011shift approach enables applications such as quantum reinforcement learning, policy gradients, quantum kernel methods, and meta\u2011learning, where the variational parameters encode the model (e.g., a Q\u2011function or a policy) and are tuned to solve the target task."
+    }
+  ]
+}

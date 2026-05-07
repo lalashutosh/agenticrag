@@ -1,35 +1,84 @@
+from datetime import datetime
 import json
+from pathlib import Path
+from core.rag_sys import graph
+import time
 
-from torch.cuda import graph
-
-# assumes you already have:
-# - graph (your LangGraph agent)
-# - test_set.json
-
-def run_agent(graph, question):
-    result = graph.invoke({
-        "messages": [{"role": "user", "content": question}]
-    })
-    return result["messages"][-1].content
+BASE_DIR = Path(__file__).resolve().parent
 
 
-def build_eval_bundle(graph, test_file="test_set.json", output_file="eval_bundle.json"):
-    with open(test_file) as f:
+# -----------------------------
+# Run agent
+# -----------------------------
+def run_agent(graph, question, retries=2):
+    for i in range(retries):
+        try:
+            result = graph.invoke({
+                "messages": [{"role": "user", "content": question}]
+            })
+            return result["messages"][-1].content
+        except Exception:
+            time.sleep(1)
+    return "ERROR"
+
+# -----------------------------
+# Create run directory
+# -----------------------------
+def create_run_dir():
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    run_dir = BASE_DIR / "runs" / timestamp
+    run_dir.mkdir(parents=True, exist_ok=True)
+    return run_dir
+
+
+# -----------------------------
+# Main eval pipeline
+# -----------------------------
+def build_eval_bundle(graph, eval_version="v1.json"):
+    run_dir = create_run_dir()
+
+    eval_path = BASE_DIR / "eval_sets" / eval_version
+
+    if not eval_path.exists():
+        raise FileNotFoundError(f"Eval set not found: {eval_path}")
+
+    with open(eval_path) as f:
         test_data = json.load(f)
 
-    examples = []
+    outputs = []
+    judge_inputs = []
+
+    print("\n=== RUNNING EVAL ===\n")
 
     for item in test_data:
         q = item["question"]
+        q_id = item.get("id", None)
+
         answer = run_agent(graph, q)
 
-        examples.append({
+        outputs.append({
+            "id": q_id,
+            "question": q,
+            "answer": answer
+        })
+
+        judge_inputs.append({
+            "id": q_id,
             "question": q,
             "answer": answer
         })
 
         print(f"Processed: {q}")
 
+    # -----------------------------
+    # Save outputs (raw model results)
+    # -----------------------------
+    with open(run_dir / "outputs.json", "w") as f:
+        json.dump(outputs, f, indent=2)
+
+    # -----------------------------
+    # Save judge input bundle
+    # -----------------------------
     bundle = {
         "instructions": """
 You are an expert evaluator in quantum machine learning and physics.
@@ -48,28 +97,42 @@ Scoring:
 2 = mostly incorrect
 1 = incorrect or hallucinated
 
-Return STRICT JSON for each item:
+Return STRICT JSON:
 {
+  "id": "...",
   "score": 1-5,
-  "verdict": "correct" | "partially_correct" | "incorrect",
+  "verdict": "correct | partially_correct | incorrect",
   "reason": "brief explanation"
 }
 
-Be strict. Penalize vague or generic answers.
+Be strict and avoid generosity bias.
 """,
-        "schema": {
-            "score": "1-5",
-            "verdict": "correct | partially_correct | incorrect",
-            "reason": "string"
-        },
-        "examples": examples
+        "eval_set": eval_version,
+        "examples": judge_inputs
     }
 
-    with open(output_file, "w") as f:
+    with open(run_dir / "eval_bundle.json", "w") as f:
         json.dump(bundle, f, indent=2)
 
-    print(f"\nSaved eval bundle to {output_file}")
+    # -----------------------------
+    # Save config (CRITICAL for reproducibility)
+    # -----------------------------
+    config = {
+    "model": "Qwen2.5-7B-Instruct (vLLM local)",
+    "backend": "vllm",
+    "retriever_k": 5,
+    "eval_file": eval_version,
+    "timestamp": datetime.now().isoformat()
+}
+
+    with open(run_dir / "config.json", "w") as f:
+        json.dump(config, f, indent=2)
+
+    print(f"\n✅ Saved run to: {run_dir}")
 
 
-# run it
-build_eval_bundle(graph)
+# -----------------------------
+# Entry point
+# -----------------------------
+if __name__ == "__main__":
+    build_eval_bundle(graph, eval_version="v1.json")

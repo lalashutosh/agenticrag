@@ -1,0 +1,17 @@
+[
+  {
+    "question": "What is a quantum kernel method?",
+    "expected_keywords": ["kernel", "feature space", "quantum"],
+    "type": "concept"
+  },
+  {
+    "question": "What is the role of Hilbert space in quantum machine learning?",
+    "expected_keywords": ["Hilbert", "state space"],
+    "type": "theory"
+  },
+  {
+    "question": "How do variational quantum circuits work?",
+    "expected_keywords": ["parameters", "optimization", "circuit"],
+    "type": "method"
+  }
+]
