@@ -1,47 +1,115 @@
-# Agentic RAG for Quantum ML Research
+# Quantum ML Agentic RAG System
 
-A multi-agent retrieval-augmented research assistant for exploring **~500 quantum machine learning papers**.
+A hybrid retrieval + reasoning system for scientific discovery over ~500 quantum machine learning papers.
 
-Built to answer scientific questions with:
-- grounded evidence retrieval,
-- multi-hop reasoning over retrieved literature,
-- and explicit separation between **known facts** vs **novel/speculative bridges**.
-
-Current focus: **Quantum Machine Learning (QML)**, but architecture is designed to be **domain-portable** by swapping the corpus.
+The system combines deterministic graph-based retrieval with LLM-guided hypothesis generation and validation.
 
 ---
 
-# Current Status (v2)
+# Overview
 
-✅ Hybrid retrieval upgraded:
-- dense semantic search: **BGE-M3**
-- sparse lexical search: **BM25**
-- fusion: **Reciprocal Rank Fusion (RRF)**
+This project is a **state-aware agentic RAG system** designed to:
+- discover non-obvious relationships in quantum machine learning literature
+- generate and validate scientific bridge hypotheses
+- operate under strict cost and retrieval constraints
 
-✅ LLM upgraded:
-- **Qwen2.5-7B-Instruct**
-- 4-bit quantized for 12GB GPU deployment
-
-✅ Multi-agent pipeline operational:
-- decomposition
-- neighbor expansion
-- bridge discovery
-- adversarial validation
-- synthesis
-
-✅ Evaluation suite added:
-- unit tests
-- integration tests
-- quality probes
-- reusable eval bundles
-
-Known limitations:
-- bridge discovery still overproduces some weak/self-loop hypotheses
-- decomposition occasionally emits generic triples
-- synthesis can repeat grounded facts in speculative sections
+It is not a chat system — it is a **structured reasoning engine over a semantic graph of research papers**.
 
 ---
 
+# Architecture
+
+## Retrieval Layer (Deterministic Core)
+
+This system builds a **bounded semantic graph before any reasoning happens**.
+
+👉 Insert Diagram Here: *Hybrid BFS Retrieval Engine*
+
+Key components:
+- BGE-M3 dense embeddings (FAISS IndexFlatIP)
+- BM25 sparse lexical retrieval (M3 lexical weights)
+- Reciprocal Rank Fusion (RRF)
+- BFS-style k-hop expansion over paper chunks
+- strict deduplication + per-source pruning
+
+Output:
+> A pruned, structured **candidate subgraph of scientific context**
+
+---
+
+## Reasoning Layer (LLM-Guided)
+
+👉 Insert Diagram Here: *Agent Reasoning Stack*
+
+Sequential pipeline:
+- Decomposition Agent → extracts scientific triples
+- Bridge Agent → proposes cross-paper hypotheses
+- Validation Agent → evaluates evidence support vs contradiction
+- Synthesis Agent → generates final structured response
+
+Important:
+- LLM operates ONLY on retrieved subgraph
+- No retrieval decisions are made during reasoning
+
+---
+
+## Control Layer
+
+👉 Insert Diagram Here: *Orchestrator State Machine*
+
+A deterministic controller that:
+- manages execution flow
+- enforces BFS expansion limits
+- tracks LLM + retrieval budgets
+- triggers bounded re-retrieval only when coverage is insufficient
+
+No reasoning logic is performed here — only system control.
+
+---
+
+# System Design
+
+## Key Principles
+
+- **Retrieval before reasoning**
+- **Graph construction is deterministic**
+- **LLM is a hypothesis evaluator, not a search engine**
+- **All exploration is budgeted and bounded**
+- **Hybrid IR (dense + sparse) ensures coverage + precision**
+
+---
+
+## Constraints
+
+- Max BFS depth: 2
+- Max retrieved nodes: ~100–150 per query
+- Max LLM calls per query: 2–3
+- Fully deterministic retrieval layer
+- No recursive agent loops
+
+---
+
+## Why this design works
+
+This system separates concerns into:
+
+- **Control Plane** → orchestrator (state machine)
+- **Data Plane** → BFS hybrid retrieval engine
+- **Reasoning Plane** → LLM agents
+
+This avoids:
+- exponential agent loops
+- redundant reasoning over unfiltered context
+- uncontrolled retrieval recursion
+
+---
+
+# Reproduce on your system
+
+## 1. Install dependencies
+
+```bash
+pip install -r requirements.txt
 # Reproduce
 
 ## 1. Install
