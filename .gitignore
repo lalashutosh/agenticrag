@@ -1,61 +1,88 @@
 # =========================
 # Python
 # =========================
-
 __pycache__/
 *.py[cod]
+*$py.class
 *.so
+.python-version
 
-# =========================
-# Virtual Environment
-# =========================
-
+# virtual envs
 venv/
 .env/
-
-# =========================
-# Environment Variables
-# =========================
-
+.venv/
 .env
+.env.*
 
-# =========================
 # Jupyter
-# =========================
-
 .ipynb_checkpoints/
 
 # =========================
-# OS Files
+# IDE / OS
 # =========================
-
+.vscode/
+.idea/
+*.swp
+*.swo
 .DS_Store
 Thumbs.db
 
 # =========================
-# Vector DB / Embeddings
+# Logs / temp
+# =========================
+*.log
+logs/
+tmp/
+temp/
+*.tmp
+
+# =========================
+# Model / HF cache
+# =========================
+.cache/
+huggingface/
+.huggingface/
+hf_home/
+transformers_cache/
+
+# =========================
+# Large data artifacts
 # =========================
 
-faiss_ragdb_500/
-ragdb_500/
+# raw PDFs
+data/ragdb_500/
+
+# old FAISS db
+data/faiss_ragdb_500/
+
+# new hybrid db
+data/faiss_ragdb_m3/
+# OR if you want folder tracked but not contents:
+# data/faiss_ragdb_m3/*
+# !data/faiss_ragdb_m3/.gitkeep
+
+# optional generated outputs
+*.index
+*.faiss
+*.pkl
+*.npy
+*.npz
+*.jsonl
 
 # =========================
-# Testing / Coverage
+# Testing artifacts
 # =========================
-
+testing/runs/
+testing/eval_bundle.json
+testing/*.prof
 .pytest_cache/
 .coverage
 htmlcov/
 
 # =========================
-# Logs
+# Torch / bitsandbytes
 # =========================
-
-*.log
-
-# =========================
-# VSCode / IDE
-# =========================
-
-.vscode/
-.idea/
+*.pt
+*.pth
+*.ckpt
+bitsandbytes/
