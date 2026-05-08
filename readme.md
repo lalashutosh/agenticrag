@@ -17,53 +17,34 @@ It is not a chat system — it is a **structured reasoning engine over a semanti
 
 ---
 
-# Architecture
+## Architecture
 
-## Retrieval Layer (Deterministic Core)
+### Retrieval Layer — Hybrid BFS RAG Engine
 
-This system builds a **bounded semantic graph before any reasoning happens**.
+![Hybrid BFS RAG Engine]<img width="1536" height="1024" alt="hybridrag" src="https://github.com/user-attachments/assets/19d06a98-ed33-4eda-90fd-0e1ae31bc26f" />
 
-👉 Insert Diagram Here: *Hybrid BFS Retrieval Engine*
 
-Key components:
-- BGE-M3 dense embeddings (FAISS IndexFlatIP)
-- BM25 sparse lexical retrieval (M3 lexical weights)
-- Reciprocal Rank Fusion (RRF)
-- BFS-style k-hop expansion over paper chunks
-- strict deduplication + per-source pruning
+Fully deterministic — no LLM calls during graph construction.
 
-Output:
-> A pruned, structured **candidate subgraph of scientific context**
+The engine performs k-hop BFS traversal over paper chunks, running dense (BGE-M3 + FAISS)
+and sparse (BM25) retrieval in parallel. Results are fused via Reciprocal Rank Fusion and
+pruned to a compact, grounded candidate subgraph. A second LLM-guided expansion phase
+activates only if coverage is insufficient.
 
 ---
 
-## Reasoning Layer (LLM-Guided)
+### Reasoning Layer — Agentic Orchestration Stack
 
-👉 Insert Diagram Here: *Agent Reasoning Stack*
+![Agentic Orchestration Stack]<img width="1024" height="660" alt="agentstack" src="https://github.com/user-attachments/assets/f35186b8-7b3d-42e1-8dd4-a4e5ac1acd9f" />
 
-Sequential pipeline:
-- Decomposition Agent → extracts scientific triples
-- Bridge Agent → proposes cross-paper hypotheses
-- Validation Agent → evaluates evidence support vs contradiction
-- Synthesis Agent → generates final structured response
 
-Important:
-- LLM operates ONLY on retrieved subgraph
-- No retrieval decisions are made during reasoning
+LLM agents operate only on the retrieved subgraph — no retrieval decisions are made here.
 
----
+A state machine Orchestrator manages execution flow and enforces budgets. Agents run in
+a fixed pipeline: Decomposition → Bridge → Validation → Synthesis. Re-retrieval is
+triggered by the Orchestrator only when evidence coverage is insufficient.
 
-## Control Layer
-
-👉 Insert Diagram Here: *Orchestrator State Machine*
-
-A deterministic controller that:
-- manages execution flow
-- enforces BFS expansion limits
-- tracks LLM + retrieval budgets
-- triggers bounded re-retrieval only when coverage is insufficient
-
-No reasoning logic is performed here — only system control.
+**Max 2–3 LLM calls per query. No recursive loops.**
 
 ---
 
