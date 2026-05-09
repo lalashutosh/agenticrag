@@ -1,4 +1,4 @@
-# Quantum ML Agentic RAG System
+# Agentic RAG System for Quantum ML research
 
 A hybrid retrieval + reasoning system for scientific discovery over ~500 quantum machine learning papers.
 
